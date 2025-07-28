@@ -3,6 +3,8 @@ package com.example.HabitTracker.controller;
 import com.example.HabitTracker.dto.AuthRequest;
 import com.example.HabitTracker.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,33 +16,33 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public String register(@RequestBody AuthRequest request) {
+    public ResponseEntity<String> register(@RequestBody AuthRequest request) {
         if (request.getEmail() == null || request.getEmail().isEmpty() ||
                 request.getPassword() == null || request.getPassword().isEmpty() ||
                 request.getName() == null || request.getName().isEmpty()) {
-            return "Error: All fields (email, password, name) are required!";
+            return ResponseEntity.badRequest().body("Error: All fields (email, password, name) are required!");
         }
 
         String token = authService.register(request.getEmail(), request.getPassword(), request.getName());
         if (token == null) {
-            return "Error: User with this email already exists!";
+            return ResponseEntity.badRequest().body("Error: User with this email already exists!");
         }
 
-        return token;
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody AuthRequest request) {
+    public ResponseEntity<String> login(@RequestBody AuthRequest request) {
         if (request.getEmail() == null || request.getEmail().isEmpty() ||
                 request.getPassword() == null || request.getPassword().isEmpty()) {
-            return "Error: Both email and password are required!";
+            return ResponseEntity.badRequest().body("Error: Both email and password are required!");
         }
 
         String token = authService.login(request.getEmail(), request.getPassword());
         if (token == null) {
-            return "Error: Invalid credentials!";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: Invalid credentials!");
         }
 
-        return token;
+        return ResponseEntity.ok(token);
     }
 }
