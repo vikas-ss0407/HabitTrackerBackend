@@ -29,7 +29,7 @@ public class NoteService {
                 .orElseThrow(() -> new RuntimeException("Note not found"));
 
         if (!note.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Unauthorized to update this note");
+            throw new RuntimeException("Unauthorized to update the Note");
         }
 
         note.setContent(content);
