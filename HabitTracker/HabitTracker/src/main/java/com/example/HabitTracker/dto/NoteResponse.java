@@ -15,5 +15,4 @@ public class NoteResponse {
     private String content;
     private LocalDateTime createdDate;
 
-
 }
