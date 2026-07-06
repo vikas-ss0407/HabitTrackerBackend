@@ -1,0 +1,69 @@
+pipeline {
+    agent any
+    environment{
+        DOCKER_IMAGE='habittrackerimg'
+        DOCKER_CONTAINER='habittracker'
+        // ENVIRONMENT='testing'
+    }
+    parameters{
+        // string(name:'ENVIRONMENT',defaultValue:'',description:'Environment Name')
+        choice(name:'ENVIRONMENT',choices:['testing','prod'],description:'Environment Name')
+    }
+    stages {
+
+        stage('Git Clone') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'HabitTracker',
+                    url: 'https://github.com/vikas-ss0407/HabitTrackerBackend.git'
+            }
+        }
+        stage('Print Path'){
+            steps{
+                sh 'echo $PATH'
+            }
+        }
+        stage('Run Tests') {
+            when{
+                expression{
+                    // ENVIRONMENT=='testing'
+                    params.ENVIRONMENT=='testing'
+                }
+            }
+            steps {
+                dir('HabitTracker/HabitTracker') {
+                    sh 'mvn test'
+                }
+            }
+        }
+        
+        stage('Build Jar') {
+            steps {
+                dir('HabitTracker/HabitTracker') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('HabitTracker/HabitTracker') {
+                    sh 'docker build -t $DOCKER_IMAGE:$BUILD_NUMBER .'
+                }
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh '''
+                docker rm -f $DOCKER_CONTAINER || true
+                docker run -d \
+                  --name $DOCKER_CONTAINER \
+                  --network habit-network \
+                  -p 8081:8080 \
+                  $DOCKER_IMAGE:$BUILD_NUMBER
+                '''
+            }
+        }
+    }
+}
