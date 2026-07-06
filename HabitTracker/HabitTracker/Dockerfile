@@ -15,6 +15,6 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar habittracker.jar
 
-EXPOSE 8080
+EXPOSE 8081
 
 ENTRYPOINT ["java", "-jar", "habittracker.jar"]
